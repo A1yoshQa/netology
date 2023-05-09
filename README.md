@@ -15,5 +15,5 @@
 
 ## contacts with me
 
-<a href="https://t.me/AlexeyNikiforov"><img src="netology\resource\Telegram.svg" width="40"></a>
-<a href="mailto:alyoshqa.nikiforov@gmail.com"><img src="netology\resource\Gmail.svg" width="40"></a>
+<a href="https://t.me/AlexeyNikiforov"><img src="resource\Telegram.svg" width="40"></a>
+<a href="mailto:alyoshqa.nikiforov@gmail.com"><img src="resource\Gmail.svg" width="40"></a>
