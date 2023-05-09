@@ -17,3 +17,8 @@
 
 <a href="https://t.me/AlexeyNikiforov"><img src="resource/Telegram.svg" width="40"></a>
 <a href="mailto:alyoshqa.nikiforov@gmail.com"><img src="resource/Gmail.svg" width="40"></a>
+
+## my repo
+
+<a href="https://github.com/A1yoshQa/netology"><img src="resource/Github.svg" width="40"></a>
+<a href="https://gitlab.com/alyoshqa.nikiforov/netology"><img src="resource/Gitlab.svg" width="40"></a>
