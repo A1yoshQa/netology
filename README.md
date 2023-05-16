@@ -2,8 +2,8 @@
 
 ## learning stages
 
-- Version control systems for DevOps engineer :triangular_flag_on_post:
-- Virtualization and containerization :watch:
+- Version control systems for DevOps engineer :heavy_check_mark:
+- Virtualization and containerization :triangular_flag_on_post:
 - cloud infrastructure. Terraform :watch:
 - Configuration Management System :watch:
 - Continuous development and integration :watch:
