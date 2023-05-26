@@ -54,4 +54,4 @@ docker ps
 
 ## Ответ 4
 
-Screen1 ![Screenshot_2](Screenshot_2.png)
+Screen2 ![Screenshot_2](Screenshot_2.png)
