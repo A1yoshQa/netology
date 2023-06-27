@@ -1,0 +1,14 @@
+---
+  - name: Installing tools
+    become: true
+    apt:
+      name: "{{ item }}"
+      state: present
+    with_items:
+      - ntp
+      - python
+      - tcpdump
+      - wget
+      - openssl
+      - curl
+      - git
