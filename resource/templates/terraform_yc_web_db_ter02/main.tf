@@ -14,7 +14,7 @@ data "yandex_compute_image" "ubuntu" {
 }
 
 resource "yandex_compute_instance" "web" {
-  name        = local.loc_web_name
+  name        =  "netology-${local.env}-${local.project}-${local.app.web_name}"
   platform_id = var.platform_id
   resources {
     cores         = var.vms_resources["vm_web_resources"].vm_cores
@@ -42,7 +42,7 @@ resource "yandex_compute_instance" "web" {
 }
 
 resource "yandex_compute_instance" "db" {
-  name        = local.loc_db_name
+  name        = "netology-${local.env}-${local.project}-${local.app.db_name}"
   platform_id = var.platform_id
   resources {
     cores         = var.vms_resources["vm_db_resources"].vm_cores
