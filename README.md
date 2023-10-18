@@ -1,6 +1,6 @@
-# project for studying
+# Project for studying
 
-## learning stages
+## Learning stages
 
 - Version control systems for DevOps engineer :heavy_check_mark:
 - Virtualization and containerization :heavy_check_mark:
@@ -13,12 +13,12 @@
 - Organization of the project with the help of cloud providers :watch:
 - Diploma block of the profession DevOps-engineer :watch:
 
-## contacts with me
+## Contacts with me
 
 <a href="https://t.me/AlexeyNikiforov"><img src="resource/Telegram.svg" width="40"></a>
 <a href="mailto:alyoshqa.nikiforov@gmail.com"><img src="resource/Gmail.svg" width="40"></a>
 
-## my repo
+## My repo
 
 <a href="https://github.com/A1yoshQa/netology"><img src="resource/Github.svg" width="40"></a>
 <a href="https://gitlab.com/alyoshqa.nikiforov/netology"><img src="resource/Gitlab.svg" width="40"></a>
