@@ -1,0 +1,92 @@
+{
+  "builders": [
+    {
+      "type": "yandex",
+      "token": "тут нужно вставить значение",
+      "folder_id": "тут нужно вставить значение",
+      "zone": "ru-central1-a",
+
+      "image_name": "ubuntu-2004{{isotime | clean_resource_name}}",
+      "image_family": "ubuntu-toolbox-server",
+      "image_description": "my custom ubuntu with tools",
+
+      "source_image_family": "ubuntu-2004-lts",
+      "subnet_id": "тут нужно вставить значение",
+      "use_ipv4_nat": true,
+      "disk_type": "network-ssd",
+      "ssh_username": "ubuntu"
+    }
+  ],
+  "provisioners": [
+    {
+      "type": "shell",
+      "inline": [
+        "sudo apt-get update",
+        "echo 'debconf debconf/frontend select Noninteractive' | sudo debconf-set-selections",
+        "sudo apt-get install -y unzip python3-pip python3.8-venv",
+
+        "curl -s -O https://storage.yandexcloud.net/yandexcloud-yc/install.sh",
+        "chmod u+x install.sh",
+        "sudo ./install.sh -a -i /usr/local/ 2>/dev/null",
+        "rm -rf install.sh",
+        "sudo sed -i '$ a source /usr/local/completion.bash.inc' /etc/profile",
+
+        "curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /usr/share/keyrings/docker-keyring.gpg",
+        "echo \"deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/docker-keyring.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable\" | sudo tee /etc/apt/sources.list.d/docker.list > /dev/null",
+        "sudo apt-get update",
+        "sudo apt-get install -y docker-ce containerd.io",
+        "sudo usermod -aG docker $USER",
+        "sudo chmod 666 /var/run/docker.sock",
+        "sudo useradd -m -s /bin/bash -G docker yc-user",
+
+        "docker pull hello-world",
+        "docker pull -q amazon/aws-cli",
+        "docker pull -q golang:1.17.2",
+
+        "curl -sL https://hashicorp-releases.yandexcloud.net/terraform/1.1.9/terraform_1.1.9_linux_amd64.zip -o terraform.zip",
+        "unzip terraform.zip",
+        "sudo install -o root -g root -m 0755 terraform /usr/local/bin/terraform",
+        "rm -rf terraform terraform.zip",
+
+        "curl -s -LO https://dl.k8s.io/release/v1.23.0/bin/linux/amd64/kubectl",
+        "sudo install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl",
+        "rm -rf kubectl",
+
+        "curl -sSLO https://get.helm.sh/helm-v3.9.0-linux-amd64.tar.gz",
+        "tar zxf helm-v3.9.0-linux-amd64.tar.gz",
+        "sudo install -o root -g root -m 0755 linux-amd64/helm /usr/local/bin/helm",
+        "rm -rf helm-v3.9.0-linux-amd64.tar.gz",
+        "rm -rf linux-amd64",
+
+        "curl -sSLO https://github.com/fullstorydev/grpcurl/releases/download/v1.8.6/grpcurl_1.8.6_linux_x86_64.tar.gz",
+        "tar zxf grpcurl_1.8.6_linux_x86_64.tar.gz",
+        "sudo install -o root -g root -m 0755 grpcurl /usr/local/bin/grpcurl",
+        "rm -rf grpcurl_1.8.6_linux_x86_64.tar.gz",
+        "rm -rf grpcurl",
+
+        "curl -sSLO https://get.pulumi.com/releases/sdk/pulumi-v3.33.2-linux-x64.tar.gz",
+        "tar zxf pulumi-v3.33.2-linux-x64.tar.gz",
+        "sudo cp pulumi/* /usr/local/bin/",
+        "rm -rf pulumi-v3.33.2-linux-x64.tar.gz",
+        "rm -rf pulumi",
+
+        "sudo apt-get install -y git jq tree tmux",
+
+        "rm -rf .sudo_as_admin_successful",
+
+        "echo '=== Tests Start ==='",
+        "yc version",
+        "terraform version",
+        "docker version",
+        "kubectl version --client=true",
+        "helm version",
+        "grpcurl --version",
+        "git --version",
+        "jq --version",
+        "tree --version",
+        "pulumi version",
+        "echo '=== Tests End ==='"
+      ]
+    }
+  ]
+}
