@@ -5,7 +5,7 @@ vector_config:
       type: file
       ignore_older_secs: 600
       include:
-        - /home/centos/logs/*.log
+        - /home/ubuntu/logs/*.log
       read_from: beginning
   sinks:
     to_clickhouse:
@@ -13,7 +13,7 @@ vector_config:
       inputs:
         - our_log
       database: custom
-      endpoint: http://clickhouse_ip:8123
+      endpoint: http://localhost:8123
       table: my_table
       compression: gzip
       healthcheck: false
