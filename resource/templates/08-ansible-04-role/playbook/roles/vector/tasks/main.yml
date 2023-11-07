@@ -1,0 +1,40 @@
+---
+- name: Get Vector distrib
+  get_url:
+    url: "https://packages.timber.io/vector/0.21.1/vector_0.21.1-1_amd64.deb"
+    dest: "./vector_0.21.1-1.deb"
+    mode: '644'
+  tags:
+  - vector
+- name: Install Vector from distrib
+  become: true
+  apt:
+   deb: vector_0.21.1-1.deb
+   state: present
+  tags:
+  - vector
+- name: Make directory
+  file:
+    path: /etc/vector
+    state: directory
+  tags:
+  - vector
+- name: Add config
+  template:
+    src: vector.yml.j2
+    dest: /etc/vector/vector.toml
+    mode: "0644"
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+  tags:
+  - vector
+- name: Add service
+  template:
+    src: vector.service.j2
+    dest: /etc/systemd/system/vector.service
+    mode: 0644
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+  notify: Start vector service
+  tags:
+  - vector

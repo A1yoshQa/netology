@@ -1,0 +1,23 @@
+---
+- name: Install git
+  become: true
+  apt:
+    name: git
+    state: present
+- name: download from git
+  become: true
+  git:
+    repo: "{{ lighthouse_vcs }}"
+    version: master
+    dest: "{{ lighthouse_location_dir }}"
+  tags:
+  - lighthouse
+- name:  Create  config
+  become: true
+  template:
+    src: lighthouse.conf.j2
+    dest: /etc/nginx/conf.d/default.conf
+    mode: "0644"
+  notify: reload-nginx
+  tags:
+  - lighthouse

@@ -1,0 +1,6 @@
+---
+- name: Install web server Nginx
+  import_tasks: nginx.yml
+
+- name: Install Lighthouse
+  import_tasks: lighthouse.yml

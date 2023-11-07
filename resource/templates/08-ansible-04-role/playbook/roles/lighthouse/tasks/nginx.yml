@@ -1,0 +1,21 @@
+---
+- name: Install nginx
+  become: true
+  apt:
+    name: "{{ item }}"
+    update_cache: yes
+  loop:
+    - nginx
+    - curl
+    - unzip
+  tags:
+  - lighthouse
+- name: Create general config
+  become: true
+  template:
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+    mode: "0644"
+  notify: reload-nginx
+  tags:
+  - lighthouse
