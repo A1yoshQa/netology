@@ -5,8 +5,8 @@
 - Version control systems for DevOps engineer :heavy_check_mark:
 - Virtualization and containerization :heavy_check_mark:
 - cloud infrastructure. Terraform :heavy_check_mark:
-- Configuration Management System :triangular_flag_on_post:
-- Continuous development and integration :watch:
+- Configuration Management System :heavy_check_mark:
+- Continuous development and integration :triangular_flag_on_post:
 - Monitoring and logs :watch:
 - Microservices :watch:
 - Kubernetes: basics, application and administration :watch:
