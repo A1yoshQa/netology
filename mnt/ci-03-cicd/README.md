@@ -8,7 +8,7 @@
 4. Запустите playbook, ожидайте успешного завершения.
 5. Проверьте готовность SonarQube через [браузер](http://localhost:9000).
 6. Зайдите под admin\admin, поменяйте пароль на свой.
-7.  Проверьте готовность Nexus через [бразуер](http://localhost:8081).
+7. Проверьте готовность Nexus через [бразуер](http://localhost:8081).
 8. Подключитесь под admin\admin123, поменяйте пароль, сохраните анонимный доступ.
 
 ## Знакомоство с SonarQube
@@ -25,21 +25,27 @@
 8. Запустите анализатор повторно — проверьте, что QG пройдены успешно.
 9. Сделайте скриншот успешного прохождения анализа, приложите к решению ДЗ.
 
+![Screenshot](img/1.png)
+![Screenshot](img/2.png)
+![Screenshot](img/3.png)
+
 ## Знакомство с Nexus
 
 ### Основная часть
 
 1. В репозиторий `maven-public` загрузите артефакт с GAV-параметрами:
 
- *    groupId: netology;
- *    artifactId: java;
- *    version: 8_282;
- *    classifier: distrib;
- *    type: tar.gz.
-   
+- groupId: netology;
+- artifactId: java;
+- version: 8_282;
+- classifier: distrib;
+- type: tar.gz.
+
 2. В него же загрузите такой же артефакт, но с version: 8_102.
 3. Проверьте, что все файлы загрузились успешно.
 4. В ответе пришлите файл `maven-metadata.xml` для этого артефекта.
+
+## [maven-metadata.xml](example/maven-metadata.xml)
 
 ### Знакомство с Maven
 
@@ -57,6 +63,10 @@
 2. Запустите команду `mvn package` в директории с `pom.xml`, ожидайте успешного окончания.
 3. Проверьте директорию `~/.m2/repository/`, найдите ваш артефакт.
 4. В ответе пришлите исправленный файл `pom.xml`.
+
+![Screenshot](img/4.png)
+
+## [pom.xml](mvn/pom.xml)
 
 ---
 
