@@ -1,0 +1,16 @@
+pipeline {
+    agent any
+    stages {
+        stage('Get code') {
+            steps {
+                git branch: 'main', url: 'https://github.com/A1yoshQa/molecule.git'
+            }
+        }
+        stage('Testing') {
+            steps {
+                sh 'molecule init scenario default --driver-name docker'
+                sh 'molecule test'
+            }
+        }
+    }
+}
