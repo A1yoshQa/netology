@@ -2,12 +2,13 @@
 
 ## Подготовка к выполнению
 
-
 1. Или подготовьте к работе Managed GitLab от yandex cloud [по инструкции](https://cloud.yandex.ru/docs/managed-gitlab/operations/instance/instance-create) .
-Или создайте виртуальную машину из публичного образа [по инструкции](https://cloud.yandex.ru/marketplace/products/yc/gitlab ) .
-2. Создайте виртуальную машину и установите на нее gitlab runner, подключите к вашему серверу gitlab  [по инструкции](https://docs.gitlab.com/runner/install/linux-repository.html) .
+   Или создайте виртуальную машину из публичного образа [по инструкции](https://cloud.yandex.ru/marketplace/products/yc/gitlab) .
+2. Создайте виртуальную машину и установите на нее gitlab runner, подключите к вашему серверу gitlab [по инструкции](https://docs.gitlab.com/runner/install/linux-repository.html) .
+   ![Screenshot](img/Screenshot_1.png)
+   ![Screenshot](img/Screenshot_2.png)
 
-3. (* Необязательное задание повышенной сложности. )  Если вы уже знакомы с k8s попробуйте выполнить задание, запустив gitlab server и gitlab runner в k8s  [по инструкции](https://cloud.yandex.ru/docs/tutorials/infrastructure-management/gitlab-containers). 
+3. (\* Необязательное задание повышенной сложности. ) Если вы уже знакомы с k8s попробуйте выполнить задание, запустив gitlab server и gitlab runner в k8s [по инструкции](https://cloud.yandex.ru/docs/tutorials/infrastructure-management/gitlab-containers).
 
 4. Создайте свой новый проект.
 5. Создайте новый репозиторий в GitLab, наполните его [файлами](./repository).
@@ -25,7 +26,10 @@
 4. Создана директория `/python_api`.
 5. Скрипт из репозитория размещён в /python_api.
 6. Точка вызова: запуск скрипта.
-7. При комите в любую ветку должен собираться docker image с форматом имени hello:gitlab-$CI_COMMIT_SHORT_SHA . Образ должен быть выложен в Gitlab registry или yandex registry.   
+7. При комите в любую ветку должен собираться docker image с форматом имени hello:gitlab-$CI_COMMIT_SHORT_SHA . Образ должен быть выложен в Gitlab registry или yandex registry.  
+   ![Screenshot](img/Screenshot_3.png)
+   ![Screenshot](img/Screenshot_4.png)
+   ![Screenshot](img/Screenshot_5.png)
 
 ### Product Owner
 
@@ -34,6 +38,7 @@
 1. Какой метод необходимо исправить.
 2. Текст с `{ "message": "Already started" }` на `{ "message": "Running"}`.
 3. Issue поставить label: feature.
+   ![Screenshot](img/Screenshot_6.png)
 
 ### Developer
 
@@ -42,7 +47,9 @@
 1. Создать отдельную ветку, связанную с этим Issue.
 2. Внести изменения по тексту из задания.
 3. Подготовить Merge Request, влить необходимые изменения в `master`, проверить, что сборка прошла успешно.
-
+   ![Screenshot](img/Screenshot_7.png)
+   ![Screenshot](img/Screenshot_8.png)
+   ![Screenshot](img/Screenshot_9.png)
 
 ### Tester
 
@@ -51,15 +58,19 @@
 1. Поднять докер-контейнер с образом `python-api:latest` и проверить возврат метода на корректность.
 2. Закрыть Issue с комментарием об успешности прохождения, указав желаемый результат и фактически достигнутый.
 
+   ![Screenshot](img/Screenshot_10.png)
+   ![Screenshot](img/Screenshot_11.png)
+   ![Screenshot](img/Screenshot_12.png)
+
 ## Итог
 
 В качестве ответа пришлите подробные скриншоты по каждому пункту задания:
 
 - файл gitlab-ci.yml;
-- Dockerfile; 
+- Dockerfile;
 - лог успешного выполнения пайплайна;
 - решённый Issue.
 
-### Важно 
-После выполнения задания выключите и удалите все задействованные ресурсы в Yandex Cloud.
+### Важно
 
+После выполнения задания выключите и удалите все задействованные ресурсы в Yandex Cloud.

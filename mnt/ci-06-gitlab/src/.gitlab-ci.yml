@@ -1,0 +1,27 @@
+stages:         
+  - build
+  - deploy
+
+build-job:       
+  stage: build
+  tags:
+    - pypi
+  script:
+    - docker build -t $IMAGE/hello:gitlab-$CI_COMMIT_SHORT_SHA .
+    - docker login -u $REGISTRY_LOGIN -p $REGISTRY_PASS $REGISTRY_URL
+    - docker push $IMAGE/hello:gitlab-$CI_COMMIT_SHORT_SHA
+
+deploy-job:      
+  stage: deploy
+  tags:
+    - pypi
+  before_script:
+    - mkdir -p ~/.ssh
+    - echo "$SSH_PRIVATE_KEY" | tr -d '\r' > ~/.ssh/id_rsa
+    - eval $(ssh-agent -s)
+    - chmod 700 ~/.ssh/id_rsa
+    - ssh-add ~/.ssh/id_rsa
+    - '[[ -f /.dockerenv ]] && echo -e "Host *\n\tStrictHostKeyChecking no\n\n" > ~/.ssh/config'
+  script:
+    - ssh -tt $SERVER_USER@$SERVER_IP "cd ./docker/api && sed -i 's|IMAGE=.*|IMAGE=$IMAGE/hello:gitlab-$CI_COMMIT_SHORT_SHA|' .env"
+    - ssh -tt $SERVER_USER@$SERVER_IP "cd ./docker/api && docker system prune -f && docker-compose pull && docker-compose up -d python-api && exit && bash"
