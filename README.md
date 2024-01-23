@@ -7,8 +7,8 @@
 - cloud infrastructure. Terraform :heavy_check_mark:
 - Configuration Management System :heavy_check_mark:
 - Continuous development and integration :heavy_check_mark:
-- Monitoring and logs :triangular_flag_on_post:
-- Microservices :watch:
+- Monitoring and logs :heavy_check_mark:
+- Microservices :triangular_flag_on_post:
 - Kubernetes: basics, application and administration :watch:
 - Organization of the project with the help of cloud providers :watch:
 - Diploma block of the profession DevOps-engineer :watch:
