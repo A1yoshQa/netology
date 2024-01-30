@@ -6,14 +6,13 @@ volumes:
 services:
   storage:
     image: minio/minio:RELEASE.2021-04-18T19-26-29Z
-    #image: minio/minio:latest
     command: server /data
     restart: always
-    expose: 
+    expose:
       - 9000
     environment:
-      MINIO_ROOT_USER: storage
-      MINIO_ROOT_PASSWORD: qwerty123456
+      MINIO_ROOT_USER: ${Storage_AccessKey:-STORAGE_ACCESS_KEY}
+      MINIO_ROOT_PASSWORD: ${Storage_Secret:-STORAGE_SECRET_KEY}
       MINIO_PROMETHEUS_AUTH_TYPE: public
     volumes:
       - ./minio-data:/data
@@ -30,7 +29,7 @@ services:
     restart: on-failure
     entrypoint: > 
       /bin/sh -c "      
-      /usr/bin/mc config host add storage http://storage:9000 ${Storage_AccessKey-STORAGE_ACCESS_KEY} ${Storage_Secret-STORAGE_SECRET_KEY} &&
+      /usr/bin/mc config host add storage http://11-microservices-02-principles_storage_1:9000 ${Storage_AccessKey-STORAGE_ACCESS_KEY} ${Storage_Secret-STORAGE_SECRET_KEY} &&
       /usr/bin/mc mb --ignore-existing storage/${Storage_Bucket:-data} &&
       /usr/bin/mc policy set download storage/${Storage_Bucket:-data} &&
       exit 0;
@@ -61,10 +60,9 @@ services:
   gateway:
     image: nginx:alpine
     volumes:
-      - ./gateway/nginx.conf:/etc/nginx/nginx.conf:ro
-      - ./gateway/sites-enabled/localhost.conf:/etc/nginx/sites-enabled/localhost.conf:ro
+      - ./gateway/default.conf:/etc/nginx/conf.d/default.conf:ro
     ports:
-      - "80:8080"      
+      - "80:80" 
     depends_on:
       - storage
       - uploader
