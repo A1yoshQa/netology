@@ -1,0 +1,19 @@
+# Конфигурация источника
+[sources.my_source]
+type = "docker_logs" # тип источника
+include_containers = ["security"] # имя контейнера, из которого будут собираться логи
+
+# Конфигурация назначения
+[sinks.my_sink]
+type = "elasticsearch" # тип назначения
+inputs = ["my_source"] # указываем, какой источник данных будет использоваться
+host = "http://elasticsearch" # параметры подключения к Elasticsearch
+
+# Группировка источников и назначений
+[transforms.my_pipeline]
+inputs = ["my_source"]
+outputs = ["my_sink"]
+
+# Назначение pipeline для обработки данных
+[pipelines.my_pipeline]
+transforms = ["my_pipeline"]

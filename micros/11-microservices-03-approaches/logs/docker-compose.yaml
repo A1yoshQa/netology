@@ -1,0 +1,45 @@
+version: '3'
+
+services:
+  vector:
+    image: timberio/vector:0.35.0-debian
+    container_name: vector
+    volumes:
+      - ./vector/vector.toml:/etc/vector/vector.toml
+      - ./vector/vector.yaml:/etc/vector/vector.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      -  DOCKER_HOST="unix:///var/run/docker.sock"
+    restart: always
+    networks:
+      - my-network
+
+  elasticsearch:
+    image: elasticsearch:7.9.2
+    container_name: elasticsearch
+    environment:
+      - cluster.name=docker-cluster
+      - node.name=elasticsearch
+      - discovery.type=single-node
+    ports:
+      - 9200:9200
+    volumes:
+      - ./elasticsearch/data:/usr/share/elasticsearch/data
+    restart: always
+    networks:
+      - my-network
+
+  kibana:
+    image: kibana:7.9.2
+    container_name: kibana
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+    ports:
+      - 8081:5601
+    restart: always
+    networks:
+      - my-network
+
+networks:
+  my-network:
+    external: true

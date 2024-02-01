@@ -1,0 +1,11 @@
+sources:
+  my_logs:
+    type: "docker_logs"
+    include_containers: ["gateway"]
+
+sinks:
+  my_sink:
+    type: "elasticsearch"
+    inputs: ["my_logs"]
+    endpoints:
+       - http://localhost:9200
