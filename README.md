@@ -8,8 +8,8 @@
 - Configuration Management System :heavy_check_mark:
 - Continuous development and integration :heavy_check_mark:
 - Monitoring and logs :heavy_check_mark:
-- Microservices :triangular_flag_on_post:
-- Kubernetes: basics, application and administration :watch:
+- Microservices :heavy_check_mark:
+- Kubernetes: basics, application and administration :triangular_flag_on_post:
 - Organization of the project with the help of cloud providers :watch:
 - Diploma block of the profession DevOps-engineer :watch:
 
