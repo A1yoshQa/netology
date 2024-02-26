@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: my-pod
+  namespace: netology
+  labels:
+    app: my-pod
+spec:
+  containers:
+  - image: praqma/network-multitool:latest
+    name: multitool-pod
+    ports:
+      - containerPort: 8180
+    env:
+    - name: HTTP_PORT
+      value: "8180"
