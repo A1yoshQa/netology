@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  namespace: netology
+  labels:
+    app: my-back
+spec:
+  selector:
+    matchLabels:
+      app: my-back
+  template:
+    metadata:
+      labels:
+        app: my-back
+    spec:
+      containers:
+      - name: multitool
+        image: praqma/network-multitool:latest
+        ports:
+        - containerPort: 8080
+        env:
+          - name: HTTP_PORT
+            value: "8080"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-back
+  namespace: netology
+spec:
+  selector:
+     app: my-back
+  ports:
+   - name: multitool
+     port: 8080
+     protocol: TCP
+     targetPort: 8080
