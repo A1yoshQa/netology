@@ -1,0 +1,31 @@
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: my-daemonset
+  namespace: netology
+  labels:
+    app: my-app
+spec:
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: multitool
+        image: praqma/network-multitool:latest
+        volumeMounts:
+        - name: my-volume
+          mountPath: /logs/
+        ports:
+        - containerPort: 8080
+        env:
+          - name: HTTP_PORT
+            value: "8080"
+      volumes:
+      - name: my-volume
+        hostPath:
+          path: /var/log/syslog
