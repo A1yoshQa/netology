@@ -1,0 +1,37 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-deployment
+  labels:
+    app: my-deployment
+spec:
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: busybox
+        image: busybox
+        volumeMounts:
+        - name: volumass
+          mountPath: /output
+        command: ['sh', '-c', 'while true; do echo "puk hryuk, actually time is $(date)" >> /output/example.txt; sleep 10; done']
+      - name: multitool
+        image: praqma/network-multitool:latest
+        volumeMounts:
+        - name: volumass
+          mountPath: /input
+        command: ['sh', '-c', 'while true; do cat /input/example.txt; sleep 10; done']
+        ports:
+        - containerPort: 8080
+        env:
+          - name: HTTP_PORT
+            value: "8080"
+      volumes:
+      - name: volumass
+        persistentVolumeClaim:
+          claimName: pvc-vol
