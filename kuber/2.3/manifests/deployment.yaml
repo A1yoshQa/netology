@@ -1,0 +1,94 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: netology
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: my-config
+  namespace: netology
+data:
+  ports_multitool: '8080'
+  ports_nginx: '80'
+  index: |
+    <H1>Puk hryuk!!!</h1>
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fullstack
+  namespace: netology
+  labels:
+    app: my-app
+spec:
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: multitool
+        image: praqma/network-multitool:latest
+        ports:
+        - containerPort: 8080
+        env:
+          - name: HTTP_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: my-config
+                key: ports_multitool
+
+      - name: nginx
+        image: nginx:latest
+        volumeMounts:
+        - name: configmap-nginx
+          mountPath: /usr/share/nginx/html/
+        ports:
+        - containerPort: 80
+        env:
+          - name: HTTP_PORT
+            valueFrom:
+              configMapKeyRef:
+                name: my-config
+                key: ports_nginx
+
+      volumes:
+        - name: configmap-nginx
+          configMap:
+            name: my-config
+            items:
+              - key: "index"
+                path: "index.html"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-front
+  namespace: netology
+spec:
+  selector:
+     app: my-app
+  ports:
+   - name: nginx
+     port: 80
+     protocol: TCP
+     targetPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: service-back
+  namespace: netology
+spec:
+  selector:
+     app: my-app
+  ports:
+   - name: multitool
+     port: 8080
+     protocol: TCP
+     targetPort: 8080
