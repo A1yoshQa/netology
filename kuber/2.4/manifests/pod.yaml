@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pod-with-app
+  labels:
+    app: myapp
+spec:
+  containers:
+  - image: gcr.io/kubernetes-e2e-test-images/echoserver:2.2
+    name: web-proxy
+    ports:
+    - containerPort: 8080

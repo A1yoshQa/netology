@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: alyoshqa-token
+  annotations:
+    kubernetes.io/service-account.name: "alyoshqa"
+type: kubernetes.io/service-account-token
