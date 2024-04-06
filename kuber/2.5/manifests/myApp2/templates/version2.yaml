@@ -1,0 +1,20 @@
+{{- if .Values.version2.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: myappv2
+  labels:
+    app: my-app2
+spec:
+  selector:
+    matchLabels:
+      app: my-app2
+  template:
+    metadata:
+      labels:
+        app: my-app2
+    spec:
+      containers:
+        - name: my-app2
+          image: {{ .Values.version2.image }}
+{{- end }}

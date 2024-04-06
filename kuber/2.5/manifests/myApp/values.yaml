@@ -1,0 +1,5 @@
+replica:
+  Count: 1
+image:
+  AppName: nginx
+  tag: ""

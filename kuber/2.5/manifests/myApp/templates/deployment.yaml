@@ -1,0 +1,70 @@
+{{- if eq .Values.appVersion "v1" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-v1
+  namespace: netology
+  labels:
+    app: {{ .Release.Name }}-v1
+spec:
+  replicas: {{ .Values.replica.Count }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-v1
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-v1
+    spec:
+      containers:
+      - name: nginx
+        image: "{{ .Values.image.AppName }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        ports:
+        - containerPort: 80
+{{- else if eq .Values.appVersion "v2" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-v2
+  namespace: netology
+  labels:
+    app: {{ .Release.Name }}-v2
+spec:
+  replicas: {{ .Values.replica.Count }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-v2
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-v2
+    spec:
+      containers:
+      - name: nginx
+        image: "{{ .Values.image.AppName }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        ports:
+        - containerPort: 80
+{{- else if eq .Values.appVersion "v3" }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ .Release.Name }}-v3
+  namespace: netology
+  labels:
+    app: {{ .Release.Name }}-v3
+spec:
+  replicas: {{ .Values.replica.Count }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}-v3
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}-v3
+    spec:
+      containers:
+      - name: nginx
+        image: "{{ .Values.image.AppName }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
+        ports:
+        - containerPort: 80
+{{- end }}

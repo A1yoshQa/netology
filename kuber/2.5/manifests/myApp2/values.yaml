@@ -1,0 +1,9 @@
+# Значения для установки версии 1
+version1:
+  enabled: true
+  image: nginx:stable-alpine3.17-slim
+
+# Значения для установки версии 2
+version2:
+  enabled: true
+  image: nginx:alpine3.18-slim
