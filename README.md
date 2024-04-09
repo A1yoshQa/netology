@@ -9,8 +9,8 @@
 - Continuous development and integration :heavy_check_mark:
 - Monitoring and logs :heavy_check_mark:
 - Microservices :heavy_check_mark:
-- Kubernetes: basics, application and administration :triangular_flag_on_post:
-- Organization of the project with the help of cloud providers :watch:
+- Kubernetes: basics, application and administration :heavy_check_mark:
+- Organization of the project with the help of cloud providers :triangular_flag_on_post:
 - Diploma block of the profession DevOps-engineer :watch:
 
 ## Contacts with me
