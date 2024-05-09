@@ -10,8 +10,8 @@
 - Monitoring and logs :heavy_check_mark:
 - Microservices :heavy_check_mark:
 - Kubernetes: basics, application and administration :heavy_check_mark:
-- Organization of the project with the help of cloud providers :triangular_flag_on_post:
-- Diploma block of the profession DevOps-engineer :watch:
+- Organization of the project with the help of cloud providers :heavy_check_mark:
+- Diploma block of the profession DevOps-engineer :triangular_flag_on_post:
 
 ## Contacts with me
 
