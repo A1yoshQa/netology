@@ -51,11 +51,6 @@ variable "vms" {
   }
 }
 
-variable "env_name" {
-  type = string
-  default = "subnet"
-}
-
 variable "subnets" {
   type = list(object({
     zone = string
