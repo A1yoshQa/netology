@@ -27,6 +27,21 @@ resource "yandex_storage_bucket" "bucket" {
   bucket     = "alyoshqa-state-bucket"
 }
 
+data "yandex_iam_policy" "editor" {
+  binding {
+    role = "storage.editor"
+
+    members = [
+      "userAccount:${yandex_iam_service_account.sa.id}",
+    ]
+  }
+}
+
+resource "yandex_iam_service_account_iam_policy" "editor-account-iam" {
+  service_account_id = "${yandex_iam_service_account.sa.id}"
+  policy_data        = "${data.yandex_iam_policy.editor.policy_data}"
+}
+
 resource "local_file" "providers" { 
   content = templatefile("../terraform/template/providers.tftpl", {
     bucket_name = "alyoshqa-state-bucket"
