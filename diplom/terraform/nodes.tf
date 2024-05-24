@@ -19,7 +19,7 @@ resource "yandex_compute_instance" "vms" {
     preemptible = true
   }
   network_interface {
-    subnet_id = yandex_vpc_subnet.develop.id
+    subnet_id = yandex_vpc_subnet.public-subnet-a.id
     nat = each.value.vm_nat
   }
   metadata = {

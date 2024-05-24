@@ -4,8 +4,8 @@ resource "yandex_compute_instance" "node" {
   name = "node-${count.index + 1}"
   
   resources {
-    cores  = 8
-    memory = 8
+    cores  = 2
+    memory = 2
     core_fraction = 100
   }
 
@@ -16,8 +16,8 @@ resource "yandex_compute_instance" "node" {
   }
 
   network_interface {
-    subnet_id = yandex_vpc_subnet.develop.[each.id]
-    nat = false
+    subnet_id = yandex_vpc_subnet.public-subnet-a.id
+    nat = true
   }
 
   metadata = {
