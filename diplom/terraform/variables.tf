@@ -1,4 +1,3 @@
-#cloud vars
 variable "token" {
   type        = string
   description = "OAuth-token; https://cloud.yandex.ru/docs/iam/concepts/authorization/oauth-token"
@@ -16,37 +15,4 @@ variable "folder_id" {
 
 variable "default_zone" {
   default     = "ru-central1-a"
-}
-
-variable "platform_id" {
-  default     = "standard-v1"
-}
-
-variable "vms" {
-  type = map(object({ 
-    vm_name = string, 
-    vm_cores = number,
-    vm_memory = number,
-    vm_size = number,
-    vm_core_fraction = number,
-    nat = bool
-  }))
-  default = { 
-     vm1 = {
-      vm_name = "master",
-      vm_cores = 4,
-      vm_memory = 4,
-      vm_size = 100,
-      vm_core_fraction = 100,
-      nat = true
-    },
-     vm2 = {
-      vm_name = "monitoring",
-      vm_cores = 4,
-      vm_memory = 4,
-      vm_size = 100,
-      vm_core_fraction = 100,
-      nat = true
-    }
-  }
 }

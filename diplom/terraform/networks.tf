@@ -14,9 +14,9 @@ resource "yandex_vpc_subnet" "public-subnet-b" {
   zone           = "ru-central1-b"
   network_id     = yandex_vpc_network.vpc-stage.id
 }
-resource "yandex_vpc_subnet" "public-subnet-c" {
-  name           = "public-c"
+resource "yandex_vpc_subnet" "public-subnet-d" {
+  name           = "public-d"
   v4_cidr_blocks = ["192.168.30.0/24"]
-  zone           = "ru-central1-c"
+  zone           = "ru-central1-d"
   network_id     = yandex_vpc_network.vpc-stage.id
 }

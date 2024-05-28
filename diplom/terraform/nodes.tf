@@ -1,29 +1,61 @@
-resource "yandex_compute_instance" "vms" {
-  depends_on = [yandex_compute_instance.node]
-  for_each = var.vms
-  name = each.value.vm_name
-  platform_id = var.platform_id
+resource "yandex_compute_instance_group" "k8s-node-group" {
+  name               = "k8s-node-group"
+  folder_id          = var.folder_id
+  service_account_id = yandex_iam_service_account.k8s-sa.id
 
-  resources {
-    cores = each.value.vm_cores
-    memory = each.value.vm_memory
-    core_fraction = each.value.vm_core_fraction
+  instance_template {
+
+    name = "node-{instance.index}"
+    platform_id     = local.k8s.node_platform[terraform.workspace]
+
+    resources {
+      memory        = local.k8s.instance_memory_map[terraform.workspace]
+      cores         = local.k8s.instance_cores_map[terraform.workspace]
+      core_fraction = local.k8s.instance_core_fraction_map[terraform.workspace]
+    }
+
+    boot_disk {
+      mode = "READ_WRITE"
+      initialize_params {
+        image_id = local.k8s.instance_image
+        size     = 50
+      }
+    }
+
+    scheduling_policy {
+        preemptible = true
+    }
+
+    network_interface {
+      subnet_ids = [
+        yandex_vpc_subnet.public-subnet-a.id,
+        yandex_vpc_subnet.public-subnet-b.id,
+        yandex_vpc_subnet.public-subnet-d.id,
+      ]
+      nat = true
+    }
+        metadata = {
+          ssh-keys = local.k8s.node_ssh_key
+        }
+
   }
-  boot_disk {
-    initialize_params {
-      image_id = data.yandex_compute_image.ubuntu.image_id
-      size = each.value.vm_size
+
+  scale_policy {
+    fixed_scale {
+      size = local.k8s.instance_count_map[terraform.workspace]
     }
   }
-  scheduling_policy {
-    preemptible = true
+
+  allocation_policy {
+    zones = [
+      "ru-central1-a",
+      "ru-central1-b",
+      "ru-central1-d"
+    ]
   }
-  network_interface {
-    subnet_id = yandex_vpc_subnet.public-subnet-a.id
-    nat = each.value.vm_nat
-  }
-  metadata = {
-    serial-port-enable = local.metadata.serial-port-enable
-    ssh-keys = local.metadata.ssh-keys
+
+  deploy_policy {
+    max_unavailable = 1
+    max_expansion   = 0
   }
 }
