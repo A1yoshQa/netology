@@ -71,5 +71,5 @@ all:
     calico_rr:
       hosts: {}
     DOC
-  filename = "../../kubespray/inventory/my-k8s-cluster/hosts.yml"
+  filename = "../kubespray/inventory/my-k8s-cluster/hosts.yml"
 }

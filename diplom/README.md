@@ -25,111 +25,482 @@
 ## Этапы выполнения:
 
 
-### Создание облачной инфраструктуры
+<details><summary>Создание облачной инфраструктуры</summary>
 
-Для начала необходимо подготовить облачную инфраструктуру в ЯО при помощи [Terraform](https://www.terraform.io/).
+   1. Создание сервисного аккаунта и подготовка бакета для хранения стейт файлов terraform [тык](./bucket/bucket.tf).
+   2. Создание VPC с подсетями в разных зонах доступности [тык](./terraform/networks.tf)
+   3. Результат создания облачной инфраструктуры три воркер ноды и одна мастер нода
+```
+terraform apply
+Apply complete! Resources: 16 added, 0 changed, 0 destroyed.
 
-Предварительная подготовка к установке и запуску Kubernetes кластера.
+Outputs:
 
-1. Создайте сервисный аккаунт, который будет в дальнейшем использоваться Terraform для работы с инфраструктурой с необходимыми и достаточными правами. Не стоит использовать права суперпользователя
-2. Подготовьте [backend](https://www.terraform.io/docs/language/settings/backends/index.html) для Terraform:  
-   а. Рекомендуемый вариант: S3 bucket в созданном ЯО аккаунте(создание бакета через TF)
-   б. Альтернативный вариант:  [Terraform Cloud](https://app.terraform.io/)  
-3. Создайте VPC с подсетями в разных зонах доступности.
-4. Убедитесь, что теперь вы можете выполнить команды `terraform destroy` и `terraform apply` без дополнительных ручных действий.
-5. В случае использования [Terraform Cloud](https://app.terraform.io/) в качестве [backend](https://www.terraform.io/docs/language/settings/backends/index.html) убедитесь, что применение изменений успешно проходит, используя web-интерфейс Terraform cloud.
+external_ip_control_plane = "62.84.116.224"
+external_ip_nodes = tolist([
+  "158.160.52.75",
+  "62.84.121.132",
+  "158.160.131.149",
+])
+```
+   4. Проверяем содержимое полученного файла hosts.yml сгенерированного при помощи темплейта для создание кубернетис кластера постедством **kubespray**.
 
-Ожидаемые результаты:
+```
+---
+all:
+  hosts:
+    control-plane:
+      ansible_host: 62.84.116.224
+      ansible_user: ubuntu
+    node-1:
+      ansible_host: 158.160.114.59
+      ansible_user: ubuntu
+    node-2:
+      ansible_host: 84.201.143.218
+      ansible_user: ubuntu
+    node-3:
+      ansible_host: 158.160.152.9
+      ansible_user: ubuntu
+  children:
+    kube_control_plane:
+      hosts:
+        control-plane:
+    kube_node:
+      hosts:
+        node-1:
+        node-2:
+        node-3:
+    etcd:
+      hosts:
+        control-plane:
+    k8s_cluster:
+      vars:
+        supplementary_addresses_in_ssl_keys: [62.84.116.224]
+      children:
+        kube_control_plane:
+        kube_node:
+    calico_rr:
+      hosts: {}
 
-1. Terraform сконфигурирован и создание инфраструктуры посредством Terraform возможно без дополнительных ручных действий.
-2. Полученная конфигурация инфраструктуры является предварительной, поэтому в ходе дальнейшего выполнения задания возможны изменения.
+```
+
+</details>
 
 ---
-### Создание Kubernetes кластера
+<details><summary>Создание Kubernetes кластера</summary>
 
-На этом этапе необходимо создать [Kubernetes](https://kubernetes.io/ru/docs/concepts/overview/what-is-kubernetes/) кластер на базе предварительно созданной инфраструктуры.   Требуется обеспечить доступ к ресурсам из Интернета.
+   1. Подготавливаем Kubespray.
+```
+$ git clone https://github.com/kubernetes-sigs/kubespray
+$ sudo pip3 install -r requirements.txt
+```
+   2. Запускаем плейбук на основе инвентори [hosts.yml](./kubespray/inventory/my-k8s-cluster/hosts.yml) полученного при развертывании инфраструктуры терраформом на предыдущем этапе.
+```
+$ ansible-playbook -i inventory/my-k8s-cluster/hosts.yml --become --become-user=root cluster.yml
+```   
+   3. Подключаемся к мастеру и копируем содержимое файла (меняя ip на внешний ip мастер ноды) /etc/kubernetes/admin.conf на нашу рабочую машину.
+```
+apiVersion: v1
+clusters:
+- cluster:
+    certificate-authority-data: LS0tLS1CRUdJTiBDRV...DQVRFLS0tLS0K
+    server: https://127.0.0.1:6443
+  name: cluster.local
+contexts:
+- context:
+    cluster: cluster.local
+    user: kubernetes-admin
+  name: kubernetes-admin@cluster.local
+current-context: kubernetes-admin@cluster.local
+kind: Config
+preferences: {}
+users:
+- name: kubernetes-admin
+  user:
+    client-certificate-data: LS0tLS1CRUdJTiBDRVJU...lDQVRFLS0tLS0K
+    client-key-data: LS0tLS1CRUdJTiBSU0...RFIEtFWS0tLS0tCg==
+```
+   4. Проверяем доступность кластера.
+```
+root@my-ubuntu:/home/alyoshqa# kubectl get nodes
+NAME            STATUS   ROLES           AGE     VERSION
+control-plane   Ready    control-plane   2d23h   v1.29.5
+node-1          Ready    <none>          2d23h   v1.29.5
+node-2          Ready    <none>          2d23h   v1.29.5
+node-3          Ready    <none>          2d23h   v1.29.5
+```
 
-Это можно сделать двумя способами:
+```
+root@my-ubuntu:/home/alyoshqa# kubectl get pods --all-namespaces
+NAMESPACE     NAME                                                     READY   STATUS    RESTARTS        AGE
+default       alertmanager-prometheus-stack-kube-prom-alertmanager-0   2/2     Running   6 (168m ago)    2d22h
+default       my-kuber-app-745dcd885d-5k9vm                            1/1     Running   1 (153m ago)    10h
+default       my-kuber-app-745dcd885d-dlh7s                            1/1     Running   1 (93m ago)     10h
+default       my-kuber-app-745dcd885d-hg8d6                            1/1     Running   1 (168m ago)    10h
+default       prometheus-prometheus-stack-kube-prom-prometheus-0       2/2     Running   6 (153m ago)    2d22h
+default       prometheus-stack-grafana-5976f5cdf4-vdd2m                3/3     Running   9 (93m ago)     2d22h
+default       prometheus-stack-kube-prom-operator-7f8785949b-kkgnd     1/1     Running   3 (168m ago)    2d22h
+default       prometheus-stack-kube-state-metrics-58575d877f-gpjlj     1/1     Running   7 (151m ago)    2d22h
+default       prometheus-stack-prometheus-node-exporter-552qx          1/1     Running   3 (168m ago)    2d22h
+default       prometheus-stack-prometheus-node-exporter-572hp          1/1     Running   3 (153m ago)    2d22h
+default       prometheus-stack-prometheus-node-exporter-bk4j6          1/1     Running   0               2d22h
+default       prometheus-stack-prometheus-node-exporter-lgv46          1/1     Running   3 (93m ago)     2d22h
+kube-system   calico-kube-controllers-68485cbf9c-qzmgn                 1/1     Running   3 (93m ago)     2d23h
+kube-system   calico-node-dwh96                                        1/1     Running   14 (14m ago)    2d23h
+kube-system   calico-node-hmcnr                                        1/1     Running   13 (153m ago)   2d23h
+kube-system   calico-node-qbmjx                                        1/1     Running   12 (92m ago)    2d23h
+kube-system   calico-node-xmn4l                                        1/1     Running   14 (168m ago)   2d23h
+kube-system   coredns-69db55dd76-6tm82                                 1/1     Running   3 (168m ago)    2d23h
+kube-system   coredns-69db55dd76-krdmm                                 1/1     Running   0               2d23h
+kube-system   dns-autoscaler-6f4b597d8c-jg7vl                          1/1     Running   0               2d23h
+kube-system   kube-apiserver-control-plane                             1/1     Running   1               2d23h
+kube-system   kube-controller-manager-control-plane                    1/1     Running   18 (12m ago)    2d23h
+kube-system   kube-proxy-8j8rv                                         1/1     Running   3 (93m ago)     2d23h
+kube-system   kube-proxy-d659q                                         1/1     Running   3 (153m ago)    2d23h
+kube-system   kube-proxy-kmqcp                                         1/1     Running   3 (168m ago)    2d23h
+kube-system   kube-proxy-n54pf                                         1/1     Running   0               2d23h
+kube-system   kube-scheduler-control-plane                             1/1     Running   18 (12m ago)    2d23h
+kube-system   nginx-proxy-node-1                                       1/1     Running   3 (93m ago)     2d23h
+kube-system   nginx-proxy-node-2                                       1/1     Running   3 (153m ago)    2d23h
+kube-system   nginx-proxy-node-3                                       1/1     Running   3 (168m ago)    2d23h
+kube-system   nodelocaldns-jkxpg                                       1/1     Running   7 (168m ago)    2d23h
+kube-system   nodelocaldns-lc7wf                                       1/1     Running   0               2d23h
+kube-system   nodelocaldns-vpm5m                                       1/1     Running   3 (153m ago)    2d23h
+kube-system   nodelocaldns-vtvkx                                       1/1     Running   3 (93m ago)     2d23h
+```
 
-1. Рекомендуемый вариант: самостоятельная установка Kubernetes кластера.  
-   а. При помощи Terraform подготовить как минимум 3 виртуальных машины Compute Cloud для создания Kubernetes-кластера. Тип виртуальной машины следует выбрать самостоятельно с учётом требовании к производительности и стоимости. Если в дальнейшем поймете, что необходимо сменить тип инстанса, используйте Terraform для внесения изменений.  
-   б. Подготовить [ansible](https://www.ansible.com/) конфигурации, можно воспользоваться, например [Kubespray](https://kubernetes.io/docs/setup/production-environment/tools/kubespray/)  
-   в. Задеплоить Kubernetes на подготовленные ранее инстансы, в случае нехватки каких-либо ресурсов вы всегда можете создать их при помощи Terraform.
-2. Альтернативный вариант: воспользуйтесь сервисом [Yandex Managed Service for Kubernetes](https://cloud.yandex.ru/services/managed-kubernetes)  
-  а. С помощью terraform resource для [kubernetes](https://registry.terraform.io/providers/yandex-cloud/yandex/latest/docs/resources/kubernetes_cluster) создать **региональный** мастер kubernetes с размещением нод в разных 3 подсетях      
-  б. С помощью terraform resource для [kubernetes node group](https://registry.terraform.io/providers/yandex-cloud/yandex/latest/docs/resources/kubernetes_node_group)
+
+</details>
+
+---
+<details><summary>Создание тестового приложения</summary>
+
+Создадим докер-образ на основе **nginx**, отдающим страницу-портфолио. [Репозиторий с исходниками](https://github.com/A1yoshQa/app.git).
+
+   1.  [Dockerfile](https://github.com/A1yoshQa/app/blob/main/Dockerfile)
+   2.  [Конфиг nginx](https://github.com/A1yoshQa/app/blob/main/nginx/app.conf)
+   3.  В качесиве регистри был использован [DockerHub](https://hub.docker.com/repository/docker/a1yoshqa/my-kuber-app/general) 
+   ![ScreenShot](./img/Screenshot_1.jpg)
+   4. Для развертывания приложения в кластере созданы файлы deployment.yml, service.yml.
+```
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-kuber-app
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: my-kuber-app
+  template:
+    metadata:
+      labels:
+        app: my-kuber-app
+    spec:
+      containers:
+        - name: my-kuber-app
+          image: a1yoshqa/my-kuber-app:{{image_tag}}
+          ports:
+            - name: http
+              containerPort: 80
+              protocol: TCP
+```
+
+```
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-kuber-app-svc
+spec:
+  type: NodePort
+  selector:
+    app: my-kuber-app
+  ports:
+    - name: web
+      nodePort: 30903
+      port: 80
+      targetPort: 80
+```
+   5. В конфигурацию терраформа был добавлен код сетевого балансировщика для приложения
+```
+resource "yandex_lb_network_load_balancer" "nlb-my-k8s-app" {
+
+  name = "nlb-my-k8s-app"
+
+  listener {
+    name        = "app-listener"
+    port        = 80
+    target_port = 30903
+    external_address_spec {
+      ip_version = "ipv4"
+    }
+  }
+```
+
+
+
+</details>
+
+
+---
+<details><summary>Подготовка cистемы мониторинга и деплой приложения</summary>
+
+   1. Для разворачивания мониторинга воспользуемся helm [чартом](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
+
+```
+helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+helm repo update
+helm install prometheus-stack  prometheus-community/kube-prometheus-stack
+```
+   2. Проверим поднятие мониторинга
+
+```
+root@my-ubuntu:/home/alyoshqa# kubectl get svc -w
+NAME                                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+alertmanager-operated                       ClusterIP   None            <none>        9093/TCP,9094/TCP,9094/UDP   2d23h
+grafana                                     NodePort    10.233.24.218   <none>        3000:30902/TCP               2d23h
+kubernetes                                  ClusterIP   10.233.0.1      <none>        443/TCP                      3d
+my-kuber-app-svc                            NodePort    10.233.14.116   <none>        80:30903/TCP                 11h
+prometheus-operated                         ClusterIP   None            <none>        9090/TCP                     2d23h
+prometheus-stack-grafana                    ClusterIP   10.233.8.150    <none>        80/TCP                       2d23h
+prometheus-stack-kube-prom-alertmanager     ClusterIP   10.233.17.151   <none>        9093/TCP,8080/TCP            2d23h
+prometheus-stack-kube-prom-operator         ClusterIP   10.233.3.97     <none>        443/TCP                      2d23h
+prometheus-stack-kube-prom-prometheus       ClusterIP   10.233.15.234   <none>        9090/TCP,8080/TCP            2d23h
+prometheus-stack-kube-state-metrics         ClusterIP   10.233.63.159   <none>        8080/TCP                     2d23h
+prometheus-stack-prometheus-node-exporter   ClusterIP   10.233.27.68    <none>        9100/TCP                     2d23h
+```
+
+   3. Создадим манифест серсива NodePort для Grafana
+
+```
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: grafana
+  ports:
+    - name: http
+      nodePort: 30902
+      port: 3000
+      targetPort: 3000
+```
+
+   4. Для доступа извне добавим блок терраформа с сетевым балансировщиком для апп и графаны.
+
+```
+resource "yandex_lb_target_group" "nlb-group-grafana" {
+
+  name       = "nlb-group-grafana"
+  depends_on = [yandex_compute_instance_group.k8s-node-group]
+
+  dynamic "target" {
+    for_each = yandex_compute_instance_group.k8s-node-group.instances
+    content {
+      subnet_id = target.value.network_interface.0.subnet_id
+      address   = target.value.network_interface.0.ip_address
+    }
+  }
+}
+
+resource "yandex_lb_network_load_balancer" "nlb-graf" {
+
+  name = "nlb-grafana"
+
+  listener {
+    name        = "grafana-listener"
+    port        = 3000
+    target_port = 30902
+    external_address_spec {
+      ip_version = "ipv4"
+    }
+  }
+
+  attached_target_group {
+    target_group_id = yandex_lb_target_group.nlb-group-grafana.id
+
+    healthcheck {
+      name = "healthcheck"
+      tcp_options {
+        port = 30902
+      }
+    }
+  }
+  depends_on = [yandex_lb_target_group.nlb-group-grafana]
+}
+
+resource "yandex_lb_network_load_balancer" "nlb-appl" {
+
+  name = "nlb-my-k8s-app"
+
+  listener {
+    name        = "app-listener"
+    port        = 80
+    target_port = 30903
+    external_address_spec {
+      ip_version = "ipv4"
+    }
+  }
+
+  attached_target_group {
+    target_group_id = yandex_lb_target_group.nlb-group-grafana.id
+
+    healthcheck {
+      name = "healthcheck"
+      tcp_options {
+        port = 30903
+      }
+    }
+  }
+  depends_on = [yandex_lb_target_group.nlb-group-grafana]
+}
+```
+
+   5. Проверим доступность
+
+![ScreenShot](./img/Screenshot_2.jpg)
+![ScreenShot](./img/Screenshot_3.jpg)
+
+   [ССЫЛКА НА ГРАФАНУ](http://158.160.133.94:3000/) 
+
+   [ССЫЛКА НА САЙТ](http://158.160.146.168/) (внешний Ip loadbalancer'а раскидывающий трафик по 3 воркерам)
+
+
+</details>
+
+
+---
+<details><summary>Установка и настройка CI/CD</summary>
+   Для создания пайплайна для сборки и деплоя приложения выбран GitHub Actions.
+
+   [Ссылка на репозиторий](https://github.com/A1yoshQa/app.git)
+
+   1. [Ссылка манифест ci/cd](https://github.com/A1yoshQa/app/blob/main/.github/workflows/blank.yml) 
+   2. Секреты и прочие переменные используемые в сборке создаются в веб интерфейсе графаны
+![ScreenShot](./img/Screenshot_4.jpg)
+   3. В процессе сборки образ создаётся на основе [Dockerfile](https://github.com/A1yoshQa/app/blob/main/Dockerfile) представленного раннее, деплой осуществляется путём создания объектов кубера в клстере на основе манифестов [deployment.yaml](https://github.com/A1yoshQa/app/blob/main/kuber/deployment.yaml) и [service.yaml](https://github.com/A1yoshQa/app/blob/main/kuber/service.yaml).
+   4. Сам манифест сборки предстален ниже, и также расположен по стандартному пути /.github/workflows
+```
+name: CI-build_and_deploy-site
+
+env:
+  IMAGE_NAME: ${{ secrets.DOCKER_USERNAME }}/my-kuber-app
+  TAG: ${{ github.run_number }}
+  FILE_TAG: ./environments/value_tag
+  VARS_APP_REPO: ${{ vars.APP_REPO }}
+  REPO_DIR: app
   
-Ожидаемый результат:
+on:
+  push:
+    branches:
+    - main
+    tags:
+    - '*'
+    
+jobs:
 
-1. Работоспособный Kubernetes кластер.
-2. В файле `~/.kube/config` находятся данные для доступа к кластеру.
-3. Команда `kubectl get pods --all-namespaces` отрабатывает без ошибок.
+  build:
+    outputs:
+      image_tag: ${{ env.TAG }}
+    runs-on: ubuntu-latest
+
+    steps:
+    
+    - name: Get files
+      uses: actions/checkout@v3
+
+    - name: Set env TAG
+      id: step_tag
+      run: echo "TAG=$(echo ${GITHUB_REF:10})" >> $GITHUB_ENV
+      if: startsWith(github.ref, 'refs/tags/v')
+      
+    - name: Build the Docker image
+      run: docker build . --file Dockerfile --tag ${{ env.IMAGE_NAME }}:${{ env.TAG }}
+    
+    - name: Push the Docker image
+      run: |
+        docker login --username ${{ secrets.DOCKER_USERNAME }} --password ${{ secrets.DOCKER_PASSWORD }}
+        docker push ${{ env.IMAGE_NAME }}:${{ env.TAG }}
+
+
+  deploy: 
+    
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+
+    - name: Update application
+      env:
+        tag: ${{ needs.build.outputs.image_tag }}
+      uses: appleboy/ssh-action@v1.0.3
+      with:
+        host: ${{ secrets.SSH_HOST }}
+        username: ${{ secrets.SSH_USERNAME }}
+        key: ${{ secrets.SSH_KEY }}
+        port: ${{ secrets.SSH_PORT }}
+        script: |
+          sudo su 
+          sudo apt install git -y
+          kubectl delete  -f .app/kuber/deployment.yaml
+          kubectl delete -f .app/kuber/service.yaml
+          rm -rf ./${{ env.REPO_DIR}}
+          git clone ${{ env.VARS_APP_REPO }} ./${{ env.REPO_DIR}}
+          cd ./${{ env.REPO_DIR}}
+          sed -i "s|{{image_tag}}|${{ env.tag }}|g" ./kuber/deployment.yaml
+          sudo kubectl apply -f ./kuber/deployment.yaml
+          sudo kubectl apply -f ./kuber/service.yaml
+          sudo kubectl get po,svc | grep my-kuber-app
+```
+
+   5. Немного персонализируем наш сайт и выполним пуш комита.
+
+```
+root@my-ubuntu:/home/alyoshqa/app# git add .
+root@my-ubuntu:/home/alyoshqa/app# git commit -m "add my name"
+[main 0497eb7] add my name
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+root@my-ubuntu:/home/alyoshqa/app# git push -u origin
+Enumerating objects: 7, done.
+Counting objects: 100% (7/7), done.
+Delta compression using up to 4 threads
+Compressing objects: 100% (4/4), done.
+Writing objects: 100% (4/4), 401 bytes | 401.00 KiB/s, done.
+Total 4 (delta 3), reused 0 (delta 0), pack-reused 0
+remote: Resolving deltas: 100% (3/3), completed with 3 local objects.
+To https://github.com/A1yoshQa/app.git
+   247522a..0497eb7  main -> main
+Branch 'main' set up to track remote branch 'main' from 'origin'.
+```
+
+   6. Проверим статус сборки
+![ScreenShot](./img/Screenshot_5.jpg)
+сборка прошла успешно
+
+   7. Проверим обновилась ли статика нашего сайта
+   ![ScreenShot](./img/Screenshot_7.jpg)
+   ![ScreenShot](./img/Screenshot_6.jpg)
+   успешно
+
+
+
+</details>
 
 ---
-### Создание тестового приложения
+## Материалы необходимые для сдачи задания
 
-Для перехода к следующему этапу необходимо подготовить тестовое приложение, эмулирующее основное приложение разрабатываемое вашей компанией.
+1. [Репозиторий с конфигурационными файлами Terraform](https://github.com/A1yoshQa/netology/tree/main/diplom/terraform).
+2. [Репозиторий с конфигурацией kubespray](https://github.com/kubernetes-sigs/kubespray).
+3. [Репозиторий с Dockerfile тестового приложения](https://github.com/A1yoshQa/app.git) и [ссылка на собранный docker image](https://hub.docker.com/repository/docker/a1yoshqa/my-kuber-app/general).
+4. [Успешная джоба](https://github.com/A1yoshQa/app/actions/runs/9436664803) 
+5. [Ссылка на тестовое приложение](http://158.160.146.168/) и [веб интерфейс Grafana](http://158.160.133.94:3000/) с данными доступа.
 
-Способ подготовки:
+   - login admin
+   - pass yourNewPasswordHere
 
-1. Рекомендуемый вариант:  
-   а. Создайте отдельный git репозиторий с простым nginx конфигом, который будет отдавать статические данные.  
-   б. Подготовьте Dockerfile для создания образа приложения.  
-2. Альтернативный вариант:  
-   а. Используйте любой другой код, главное, чтобы был самостоятельно создан Dockerfile.
-
-Ожидаемый результат:
-
-1. Git репозиторий с тестовым приложением и Dockerfile.
-2. Регистри с собранным docker image. В качестве регистри может быть DockerHub или [Yandex Container Registry](https://cloud.yandex.ru/services/container-registry), созданный также с помощью terraform.
-
----
-### Подготовка cистемы мониторинга и деплой приложения
-
-Уже должны быть готовы конфигурации для автоматического создания облачной инфраструктуры и поднятия Kubernetes кластера.  
-Теперь необходимо подготовить конфигурационные файлы для настройки нашего Kubernetes кластера.
-
-Цель:
-1. Задеплоить в кластер [prometheus](https://prometheus.io/), [grafana](https://grafana.com/), [alertmanager](https://github.com/prometheus/alertmanager), [экспортер](https://github.com/prometheus/node_exporter) основных метрик Kubernetes.
-2. Задеплоить тестовое приложение, например, [nginx](https://www.nginx.com/) сервер отдающий статическую страницу.
-
-Способ выполнения:
-1. Воспользовать пакетом [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus), который уже включает в себя [Kubernetes оператор](https://operatorhub.io/) для [grafana](https://grafana.com/), [prometheus](https://prometheus.io/), [alertmanager](https://github.com/prometheus/alertmanager) и [node_exporter](https://github.com/prometheus/node_exporter). При желании можете собрать все эти приложения отдельно.
-2. Для организации конфигурации использовать [qbec](https://qbec.io/), основанный на [jsonnet](https://jsonnet.org/). Обратите внимание на имеющиеся функции для интеграции helm конфигов и [helm charts](https://helm.sh/)
-3. Если на первом этапе вы не воспользовались [Terraform Cloud](https://app.terraform.io/), то задеплойте и настройте в кластере [atlantis](https://www.runatlantis.io/) для отслеживания изменений инфраструктуры. Альтернативный вариант 3 задания: вместо Terraform Cloud или atlantis настройте на автоматический запуск и применение конфигурации terraform из вашего git-репозитория в выбранной вами CI-CD системе при любом комите в main ветку. Предоставьте скриншоты работы пайплайна из CI/CD системы.
-
-Ожидаемый результат:
-1. Git репозиторий с конфигурационными файлами для настройки Kubernetes.
-2. Http доступ к web интерфейсу grafana.
-3. Дашборды в grafana отображающие состояние Kubernetes кластера.
-4. Http доступ к тестовому приложению.
-
----
-### Установка и настройка CI/CD
-
-Осталось настроить ci/cd систему для автоматической сборки docker image и деплоя приложения при изменении кода.
-
-Цель:
-
-1. Автоматическая сборка docker образа при коммите в репозиторий с тестовым приложением.
-2. Автоматический деплой нового docker образа.
-
-Можно использовать [teamcity](https://www.jetbrains.com/ru-ru/teamcity/), [jenkins](https://www.jenkins.io/), [GitLab CI](https://about.gitlab.com/stages-devops-lifecycle/continuous-integration/) или GitHub Actions.
-
-Ожидаемый результат:
-
-1. Интерфейс ci/cd сервиса доступен по http.
-2. При любом коммите в репозиторие с тестовым приложением происходит сборка и отправка в регистр Docker образа.
-3. При создании тега (например, v1.0.0) происходит сборка и отправка с соответствующим label в регистри, а также деплой соответствующего Docker образа в кластер Kubernetes.
-
----
-## Что необходимо для сдачи задания?
-
-1. Репозиторий с конфигурационными файлами Terraform и готовность продемонстрировать создание всех ресурсов с нуля.
-2. Пример pull request с комментариями созданными atlantis'ом или снимки экрана из Terraform Cloud или вашего CI-CD-terraform pipeline.
-3. Репозиторий с конфигурацией ansible, если был выбран способ создания Kubernetes кластера при помощи ansible.
-4. Репозиторий с Dockerfile тестового приложения и ссылка на собранный docker image.
-5. Репозиторий с конфигурацией Kubernetes кластера.
-6. Ссылка на тестовое приложение и веб интерфейс Grafana с данными доступа.
-7. Все репозитории рекомендуется хранить на одном ресурсе (github, gitlab)
 
