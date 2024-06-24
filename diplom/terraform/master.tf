@@ -20,7 +20,7 @@ resource "yandex_compute_instance" "k8s-control-plane" {
   }
 
   network_interface {
-    subnet_id = yandex_vpc_subnet.public-subnet-a.id
+    subnet_id = lookup(local.k8s.subnet_ids, "ru-central1-a")
     nat       = true
   }
 

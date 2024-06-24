@@ -1,22 +1,14 @@
-resource "yandex_vpc_network" "vpc-stage" {
-  name = "vpc-stage"
+resource "yandex_vpc_network" "network" {
+  name = "network"
 }
 
-resource "yandex_vpc_subnet" "public-subnet-a" {
-  name           = "public-a"
-  v4_cidr_blocks = ["192.168.10.0/24"]
-  zone           = "ru-central1-a"
-  network_id     = yandex_vpc_network.vpc-stage.id
-}
-resource "yandex_vpc_subnet" "public-subnet-b" {
-  name           = "public-b"
-  v4_cidr_blocks = ["192.168.20.0/24"]
-  zone           = "ru-central1-b"
-  network_id     = yandex_vpc_network.vpc-stage.id
-}
-resource "yandex_vpc_subnet" "public-subnet-d" {
-  name           = "public-d"
-  v4_cidr_blocks = ["192.168.30.0/24"]
-  zone           = "ru-central1-d"
-  network_id     = yandex_vpc_network.vpc-stage.id
+resource "yandex_vpc_subnet" "subnet" {
+  for_each = {
+    for k,v in var.subnets :
+      v.zone => v
+  }
+  name           = "subnet-${each.value.zone}"
+  zone           = "${each.value.zone}"
+  network_id     = yandex_vpc_network.network.id
+  v4_cidr_blocks = ["${each.value.cidr}"]
 }

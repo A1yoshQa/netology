@@ -27,11 +27,7 @@ resource "yandex_compute_instance_group" "k8s-node-group" {
     }
 
     network_interface {
-      subnet_ids = [
-        yandex_vpc_subnet.public-subnet-a.id,
-        yandex_vpc_subnet.public-subnet-b.id,
-        yandex_vpc_subnet.public-subnet-d.id,
-      ]
+      subnet_ids = toset(values(local.k8s.subnet_ids))
       nat = true
     }
         metadata = {

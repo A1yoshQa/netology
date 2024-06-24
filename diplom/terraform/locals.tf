@@ -29,5 +29,13 @@ locals {
       prod    = "100"
       default = "20"
     }
+    subnet_ids = {
+       for k, v in yandex_vpc_subnet.subnet : v.zone => v.id 
+    }
+    subnet_id = {
+       for k, v in yandex_vpc_subnet.subnet : v.zone => v.id 
+    }
+
   }
+  
 }

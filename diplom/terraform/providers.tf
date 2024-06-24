@@ -11,8 +11,8 @@ terraform {
     bucket     = "alyoshqa-state-bucket"
     region     = "ru-central1"
     key        = "terraform.tfstate"
-    access_key = "123"
-    secret_key = "321"
+    access_key = "YCAJEgIiWipms8KnujZ5B4q_g"
+    secret_key = "YCPeDSrXAYMtT_7aH_qLbyV4zBg3PVpIKn7vwaxG"
 
     skip_region_validation      = true
     skip_credentials_validation = true
