@@ -11,7 +11,7 @@
 - Microservices :heavy_check_mark:
 - Kubernetes: basics, application and administration :heavy_check_mark:
 - Organization of the project with the help of cloud providers :heavy_check_mark:
-- Diploma block of the profession DevOps-engineer :triangular_flag_on_post:
+- Diploma block of the profession DevOps-engineer :heavy_check_mark:
 
 ## Contacts with me
 

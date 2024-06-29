@@ -26,48 +26,42 @@ resource "yandex_resourcemanager_folder_iam_binding" "k8s-images-puller" {
 }
 
 resource "local_file" "k8s_hosts_ip" {
-  content = <<-DOC
+  content  = <<-DOC
 ---
 all:
   hosts:
-%{ for instance in yandex_compute_instance.k8s-control-plane }
-    control-plane-${index(yandex_compute_instance.k8s-control-plane, instance) + 1}:
-      ansible_host: ${instance.network_interface[0].nat_ip_address}
+    control-plane:
+      ansible_host: ${yandex_compute_instance.k8s-control-plane.network_interface.0.nat_ip_address}
       ansible_user: ubuntu
-%{ endfor }
-%{ for instance in yandex_compute_instance_group.k8s-node-group.instances }
-    node-${index(yandex_compute_instance_group.k8s-node-group.instances, instance) + 1}:
-      ansible_host: ${instance.network_interface[0].nat_ip_address}
+    node-1:
+      ansible_host: ${yandex_compute_instance_group.k8s-node-group.instances[0].network_interface.0.nat_ip_address}
       ansible_user: ubuntu
-%{ endfor }
+    node-2:
+      ansible_host: ${yandex_compute_instance_group.k8s-node-group.instances[1].network_interface.0.nat_ip_address}
+      ansible_user: ubuntu
+    node-3:
+      ansible_host: ${yandex_compute_instance_group.k8s-node-group.instances[2].network_interface.0.nat_ip_address}
+      ansible_user: ubuntu
   children:
     kube_control_plane:
       hosts:
-%{ for instance in yandex_compute_instance.k8s-control-plane }
-        control-plane-${index(yandex_compute_instance.k8s-control-plane, instance) + 1}:
-%{ endfor }
+        control-plane:
     kube_node:
       hosts:
-%{ for instance in yandex_compute_instance_group.k8s-node-group.instances }
-        node-${index(yandex_compute_instance_group.k8s-node-group.instances, instance) + 1}:
-%{ endfor }
+        node-1:
+        node-2:
+        node-3:
     etcd:
       hosts:
-%{ for instance in yandex_compute_instance.k8s-control-plane }
-        control-plane-${index(yandex_compute_instance.k8s-control-plane, instance) + 1}:
-%{ endfor }
+        control-plane:
     k8s_cluster:
       vars:
-        supplementary_addresses_in_ssl_keys: [
-%{ for instance in yandex_compute_instance.k8s-control-plane }
-          ${instance.network_interface[0].nat_ip_address},
-%{ endfor }
-        ]
+        supplementary_addresses_in_ssl_keys: [${yandex_compute_instance.k8s-control-plane.network_interface.0.nat_ip_address}]
       children:
         kube_control_plane:
         kube_node:
     calico_rr:
       hosts: {}
-  DOC
+    DOC
   filename = "../kubespray/inventory/my-k8s-cluster/hosts.yml"
 }
